@@ -46,10 +46,10 @@ namespace LuaDecompiler.Lua
 			VarArg,     // assign vararg function args to registers
 		}
 
-		private const int HalfMax18Bit = 2 << 17;	// == 2^18 / 2 == 131071
+		private const int HalfMax18Bit = 2 << 17;   // == 2^18 / 2 == 131071
 
 		private uint data;
-		
+
 		private Op opcode;
 
 		private uint a;

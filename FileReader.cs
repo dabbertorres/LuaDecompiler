@@ -12,12 +12,12 @@ namespace LuaDecompiler
 
 		public const int SignatureBytes = 0x1B4C7561;
 		public const byte Lua51Version = 0x51;
-		
-		public string signature;		// should be ".Lua" or SignatureBytes
-		public byte version;			// 0x51 (81) for Lua 5.1
-		public byte format;				// 0 for official Lua version
-		public bool isLittleEndian;		
-		public byte intSize;			// in bytes. default 4
+
+		public string signature;        // should be ".Lua" or SignatureBytes
+		public byte version;            // 0x51 (81) for Lua 5.1
+		public byte format;             // 0 for official Lua version
+		public bool isLittleEndian;
+		public byte intSize;            // in bytes. default 4
 		public byte size_tSize;         // in bytes. default 4
 		public byte instructionSize;    // in bytes. default 4
 		public byte lua_NumberSize;     // in bytes. default 8
@@ -51,10 +51,10 @@ namespace LuaDecompiler
 				Console.WriteLine("File " + file + " does not exist: " + fnfe);
 				return;
 			}
-			
+
 			ReadHeader();
-        }
-		
+		}
+
 		public Lua.Function NextFunctionBlock()
 		{
 			long bytesLeft = fileStream.Length - 1 - fileStream.Position;
@@ -207,7 +207,7 @@ namespace LuaDecompiler
 
 			return locals;
 		}
-       
+
 		private List<string> ReadUpvalues()
 		{
 			uint numUpvalues = ReadInteger(header.intSize);
@@ -237,7 +237,7 @@ namespace LuaDecompiler
 
 			return new string(chars);
 		}
-		
+
 		private uint ReadInteger(byte intSize)
 		{
 			byte[] bytes = reader.ReadBytes(intSize);

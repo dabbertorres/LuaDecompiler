@@ -19,7 +19,7 @@ namespace LuaDecompiler
 			writer.AutoFlush = true;
 
 			functionCount = 0;
-        }
+		}
 
 		public void Write(Lua.Function function, int indentLevel = 0)
 		{
@@ -47,7 +47,7 @@ namespace LuaDecompiler
 				++functionCount;
 
 				WriteConstants(function, indentLevel + 1);
-				
+
 				WriteChildFunctions(function, indentLevel + 1);
 
 				WriteInstructions(function, indentLevel + 1);
@@ -82,11 +82,11 @@ namespace LuaDecompiler
 						toWrite += ((Lua.NumberConstant)c).Value;
 						break;
 					case Lua.LuaType.String:
-					{
-						string str = ((Lua.StringConstant)c).Value;
-                        toWrite += '\"' + str.Substring(0, str.Length - 1) + '\"';	// substring to avoid printing out the null character
-						break;
-					}
+						{
+							string str = ((Lua.StringConstant)c).Value;
+							toWrite += '\"' + str.Substring(0, str.Length - 1) + '\"';  // substring to avoid printing out the null character
+							break;
+						}
 				}
 
 				writer.WriteLine(toWrite);
@@ -106,7 +106,7 @@ namespace LuaDecompiler
 		{
 			string indents = new string('\t', indentLevel);
 
-            foreach(var i in function.instructions)
+			foreach(var i in function.instructions)
 			{
 				string toWrite = indents;
 

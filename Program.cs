@@ -38,7 +38,7 @@ namespace LuaDecompiler
 			{
 				gen.Write(function);
 			}
-			
+
 			Console.WriteLine("\nDone!");
 			Console.ReadLine();
 		}
