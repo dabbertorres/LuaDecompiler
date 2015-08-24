@@ -14,7 +14,7 @@ namespace LuaDecompiler
 		public Generator(string path)
 		{
 			fileStream = new FileStream(path, FileMode.Create);
-			writer = new StreamWriter(fileStream, Encoding.UTF8);
+			writer = new StreamWriter(fileStream, Encoding.ASCII);
 			writer.NewLine = "\n";
 			writer.AutoFlush = true;
 

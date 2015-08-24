@@ -1,4 +1,4 @@
-﻿const0 = "io"
+const0 = "io"
 const1 = "write"
 const2 = "Hello, World!"
 var0 = _G[const0]
