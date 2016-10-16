@@ -26,7 +26,7 @@ namespace LuaDecompiler
 			// top level function
 			if(function.lineNumber == 0 && function.lastLineNumber == 0)
 			{
-				WriteConstants(function);
+//				WriteConstants(function);
 
 				WriteChildFunctions(function);
 
@@ -46,7 +46,7 @@ namespace LuaDecompiler
 				writer.Write(functionHeader);
 				++functionCount;
 
-				WriteConstants(function, indentLevel + 1);
+//				WriteConstants(function, indentLevel + 1);
 
 				WriteChildFunctions(function, indentLevel + 1);
 
@@ -68,28 +68,7 @@ namespace LuaDecompiler
 
 			foreach(var c in function.constants)
 			{
-				string toWrite = indents + "const" + constCount + " = ";
-
-				switch(c.Type)
-				{
-					case Lua.LuaType.Nil:
-						toWrite += "nil";
-						break;
-					case Lua.LuaType.Bool:
-						toWrite += ((Lua.BoolConstant)c).Value ? "true" : "false";
-						break;
-					case Lua.LuaType.Number:
-						toWrite += ((Lua.NumberConstant)c).Value;
-						break;
-					case Lua.LuaType.String:
-						{
-							string str = ((Lua.StringConstant)c).Value;
-							toWrite += '\"' + str.Substring(0, str.Length - 1) + '\"';  // substring to avoid printing out the null character
-							break;
-						}
-				}
-
-				writer.WriteLine(toWrite);
+				writer.WriteLine("{2}const{0} = {1}", constCount, c.ToString(), indents);
 				++constCount;
 			}
 		}
@@ -108,190 +87,230 @@ namespace LuaDecompiler
 
 			foreach(var i in function.instructions)
 			{
-				string toWrite = indents;
-
 				switch(i.OpCode)
 				{
 					case Lua.Instruction.Op.Move:
-						toWrite = "var" + i.A + " = var" + i.B;
+						writer.WriteLine("{2}var{0} = var{1}", i.A, i.B, indents);
 						break;
 
 					case Lua.Instruction.Op.LoadK:
-						toWrite = "var" + i.A + " = const" + i.Bx;
+						writer.WriteLine("{2}var{0} = {1}", i.A, GetConstant(i.Bx, function), indents);
 						break;
 
 					case Lua.Instruction.Op.LoadBool:
-						toWrite = "var" + i.A + " = " + (i.B != 0 ? "true" : "false");
+						writer.WriteLine("{2}var{0} = {1}", i.A, (i.B != 0 ? "true" : "false"), indents);
 						break;
 
 					case Lua.Instruction.Op.LoadNil:
-						for(uint x = i.A; x < i.B + 1; ++x)
-							writer.WriteLine("var" + x + " = nil");
+						for(int x = i.A; x < i.B + 1; ++x)
+							writer.WriteLine("{1}var{0} = nil", x, indents);
 						break;
 
 					case Lua.Instruction.Op.GetUpVal:
-						toWrite = "var" + i.A + " = upvalue[" + i.B + "]";
+						writer.WriteLine("{2}var{0} = upvalue[{1}]", i.A, i.B, indents);
 						break;
 
 					case Lua.Instruction.Op.GetGlobal:
-						toWrite = "var" + i.A + " = _G[const" + i.Bx + "]";
+						writer.WriteLine("{2}var{0} = _G[{1}]", i.A, GetConstant(i.Bx, function), indents);
 						break;
 
 					case Lua.Instruction.Op.GetTable:
-						toWrite = "var" + i.A + " = var" + i.B + "[" + ToConstantIndex(i.C) + "]";
+						writer.WriteLine("{3}var{0} = var{1}[{2}]", i.A, i.B, WriteIndex(i.C, function), indents);
 						break;
 
 					case Lua.Instruction.Op.SetGlobal:
-						toWrite = "_G[const" + i.Bx + "] = var" + i.A;
+						writer.WriteLine("{2}_G[{0}] = var{1}", GetConstant(i.Bx, function), i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.SetUpVal:
-						toWrite = "upvalue[" + i.B + "] = var" + i.A;
+						writer.WriteLine("{2}upvalue[{0}] = var{1}", i.B, i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.SetTable:
-						toWrite = "var" + i.A + "[" + ToConstantIndex(i.B) + "] = " + ToConstantIndex(i.C);
+						writer.WriteLine("{3}var{0}[{1}] = {2}", i.A, WriteIndex(i.B, function), WriteIndex(i.C, function), indents);
 						break;
 
 					case Lua.Instruction.Op.NewTable:
-						toWrite = "var" + i.A + " = {}";
+						writer.WriteLine("{1}var{0} = {{}}", i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.Self:
-						toWrite = "var" + (i.A + 1) + " = var" + i.B + "\nvar" + i.A + " = var" + i.B + "[" + ToConstantIndex(i.C) + "]";
+						writer.WriteLine("{2}var{0} = var{1}", i.A + 1, i.B, indents);
+						writer.WriteLine("{3}var{0} = var{1}[{2}]", i.A, i.B, WriteIndex(i.C, function), indents);
 						break;
 
 					case Lua.Instruction.Op.Add:
-						toWrite = "var" + i.A + " = var" + i.B + " + var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} + var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Sub:
-						toWrite = "var" + i.A + " = var" + i.B + " - var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} - var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Mul:
-						toWrite = "var" + i.A + " = var" + i.B + " * var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} * var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Div:
-						toWrite = "var" + i.A + " = var" + i.B + " / var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} / var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Mod:
-						toWrite = "var" + i.A + " = var" + i.B + " % var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} % var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Pow:
-						toWrite = "var" + i.A + " = var" + i.B + " ^ var" + i.C;
+						writer.WriteLine("{3}var{0} = var{1} ^ var{2}", i.A, i.B, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.Unm:
-						toWrite = "var" + i.A + " = -var" + i.B;
+						writer.WriteLine("{2}var{0} = -var{1}", i.A, i.B, indents);
 						break;
 
 					case Lua.Instruction.Op.Not:
-						toWrite = "var" + i.A + " = not var" + i.B;
+						writer.WriteLine("{2}var{0} = not var{1}", i.A, i.B, indents);
 						break;
 
 					case Lua.Instruction.Op.Len:
-						toWrite = "var" + i.A + " = #var" + i.B;
+						writer.WriteLine("{2}var{0} = #var{1}", i.A, i.B, indents);
 						break;
 
 					case Lua.Instruction.Op.Concat:
-						toWrite = "var" + i.A + " = ";
-						for(uint x = i.B; x < i.C + 1; ++x)
-							toWrite += "var" + x + (x != i.C ? ".." : "");
+						writer.Write("{1}var{0} = ", i.A, indents);
+
+						for(int x = i.B; x < i.C; ++x)
+							writer.Write("var{0} .. ", x);
+
+						writer.WriteLine("var{0}", i.C);
 						break;
 
 					case Lua.Instruction.Op.Jmp:
-						break;
+						throw new NotImplementedException("Jmp");
 
 					case Lua.Instruction.Op.Eq:
-						toWrite = "if (" + ToConstantIndex(i.B) + " == " + ToConstantIndex(i.C) + ") ~= " + i.A + " then";
+						writer.WriteLine("{3}if ({0} == {1}) ~= {2} then", WriteIndex(i.B, function), WriteIndex(i.C, function), i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.Lt:
-						toWrite = "if (" + ToConstantIndex(i.B) + " < " + ToConstantIndex(i.C) + ") ~= " + i.A + " then";
+						writer.WriteLine("{3}if ({0} < {1}) ~= {2} then", WriteIndex(i.B, function), WriteIndex(i.C, function), i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.Le:
-						toWrite = "if (" + ToConstantIndex(i.B) + " <= " + ToConstantIndex(i.C) + ") ~= " + i.A + " then";
+						writer.WriteLine("{3}if ({0} <= {1}) ~= {2} then", WriteIndex(i.B, function), WriteIndex(i.C, function), i.A, indents);
 						break;
 
 					case Lua.Instruction.Op.Test:
-						toWrite = "if not var" + i.A + " <=> " + i.C + " then";
+						writer.WriteLine("{2}if not var{0} <=> {1} then", i.A, i.C, indents);
 						break;
 
 					case Lua.Instruction.Op.TestSet:
-						toWrite = "if var" + i.B + " <=> " + i.C + " then\n\tvar" + i.A + " = var" + i.B + "\nend";
+						writer.WriteLine("{2}if var{0} <=> {1} then", i.B, i.C, indents);
+						writer.WriteLine("{2}\tvar{0} = var{1}", i.A, i.B, indents);
+						writer.WriteLine("end");
 						break;
 
 					case Lua.Instruction.Op.Call:
+						StringBuilder sb = new StringBuilder();
+
 						if(i.C != 0)
 						{
-							for(uint x = i.A; x < i.A + i.C - 1; ++x)
-								toWrite += "var" + x + (x != i.A + i.C - 2 ? ", " : " = ");
+							sb.Append(indents);
+							var indentLen = sb.Length;
+
+							// return values
+							for(int x = i.A; x < i.A + i.C - 2; ++x)
+								sb.AppendFormat("var{0}, ", x);
+
+							if(sb.Length - indentLen > 2)
+							{
+								sb.Remove(sb.Length - 2, 2);
+								sb.Append(" = ");
+							}
 						}
 						else
 						{
-							throw new NotImplementedException("Yeah...");
+							throw new NotImplementedException("i.C == 0");
 						}
 
-						toWrite += "var" + i.A + "(";
+						// function
+						sb.AppendFormat("var{0}(", i.A);
 
 						if(i.B != 0)
 						{
-							for(uint x = i.A + 1; x < i.A + i.B; ++x)
-								toWrite += "var" + x + (x != i.A + i.B - 1 ? ", " : ")");
+							var preArgsLen = sb.Length;
+
+							// arguments
+							for(int x = i.A; x < i.A + i.B - 1; ++x)
+								sb.AppendFormat("var{0}, ", x + 1);
+
+							if(sb.Length - preArgsLen > 2)
+								sb.Remove(sb.Length - 2, 2);
+
+							sb.Append(')');
 						}
 						else
 						{
-							throw new NotImplementedException("Yeah...");
+							throw new NotImplementedException("i.B == 0");
 						}
+
+						writer.WriteLine(sb.ToString());
 
 						break;
 
 					case Lua.Instruction.Op.TailCall:
-						break;
+						throw new NotImplementedException("TailCall");
 
 					case Lua.Instruction.Op.Return:
-						toWrite = "return";
+						writer.WriteLine("return");
 						break;
 
 					case Lua.Instruction.Op.ForLoop:
-						break;
+						throw new NotImplementedException("ForLoop");
 
 					case Lua.Instruction.Op.ForPrep:
-						break;
+						throw new NotImplementedException("ForPrep");
 
 					case Lua.Instruction.Op.TForLoop:
-						break;
+						throw new NotImplementedException("TForLoop");
 
 					case Lua.Instruction.Op.SetList:
-						break;
+						throw new NotImplementedException("SetList");
 
 					case Lua.Instruction.Op.Close:
-						break;
+						throw new NotImplementedException("Close");
 
 					case Lua.Instruction.Op.Closure:
-						break;
+						throw new NotImplementedException("Closure");
 
 					case Lua.Instruction.Op.VarArg:
-						break;
+						throw new NotImplementedException("VarArg");
 				}
-
-				writer.WriteLine(toWrite);
 			}
 		}
 
-		private string ToConstantIndex(uint value)
+		private string GetConstant(int idx, Lua.Function function)
 		{
-			// this is the logic from lua's source code (lopcodes.h).
-			// specifically, the BITRK, ISK(x), and INDEXK(r) macros
-			if((value & 1 << 8) != 0)
-				return "const" + (value & ~(1 << 8));
+			return function.constants[idx].ToString();
+		}
+
+		private int ToIndex(int value, out bool isConstant)
+		{
+			// this is the logic from lua's source code (lopcodes.h)
+			if(isConstant = (value & 1 << 8) != 0)
+				return value & ~(1 << 8);
 			else
-				return "var" + value;
+				return value;
+		}
+
+		private string WriteIndex(int value, Lua.Function function)
+		{
+			bool constant;
+			int idx = ToIndex(value, out constant);
+
+			if(constant)
+				return function.constants[idx].ToString();
+			else
+				return "var" + idx;
 		}
 	}
 }

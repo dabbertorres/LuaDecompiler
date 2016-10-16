@@ -12,18 +12,20 @@ namespace LuaDecompiler.Lua
 		}
 
 		public string sourceName;
-		public uint lineNumber;
-		public uint lastLineNumber;
+		public int lineNumber;
+		public int lastLineNumber;
 		public byte numUpvalues;
 		public byte numParameters;
 		public VarArg varArgFlag;
 		public byte maxStackSize;
 
-		public List<Lua.Instruction> instructions;
-		public List<Lua.Constant> constants;
+		public List<Instruction> instructions;
+		public List<Constant> constants;
 		public List<Function> functions;
-		public List<uint> sourceLinePositions;      // Debug data
-		public List<Lua.Local> locals;              // Debug data
-		public List<string> upvalues;               // Debug data;
+
+		// Debug data
+		public List<int> sourceLinePositions;
+		public List<Local> locals;
+		public List<string> upvalues;
 	}
 }

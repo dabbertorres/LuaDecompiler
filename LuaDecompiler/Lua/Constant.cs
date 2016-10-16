@@ -12,27 +12,32 @@ namespace LuaDecompiler.Lua
 
 	public abstract class Constant
 	{
-		protected LuaType type;
-
 		public LuaType Type
 		{
-			get { return type; }
+			get;
+			protected set;
 		}
+
+		public override abstract string ToString();
 	}
 
 	public class Constant<T> : Constant
 	{
-		private T value;
-
 		public T Value
 		{
-			get { return value; }
+			get;
+			private set;
 		}
 
-		protected Constant(LuaType t, T v)
+		protected Constant(LuaType type, T value)
 		{
-			type = t;
-			value = v;
+			Type = type;
+			Value = value;
+		}
+
+		public override string ToString()
+		{
+			return Value.ToString();
 		}
 	}
 
@@ -40,23 +45,39 @@ namespace LuaDecompiler.Lua
 	{
 		public NilConstant() : base(LuaType.Nil, null)
 		{ }
+
+		public override string ToString()
+		{
+			return "nil";
+		}
 	}
 
 	public class BoolConstant : Constant<bool>
 	{
-		public BoolConstant(bool v) : base(LuaType.Bool, v)
+		public BoolConstant(bool value) : base(LuaType.Bool, value)
 		{ }
+
+		public override string ToString()
+		{
+			return Value ? "true" : "false";
+		}
 	}
 
 	public class NumberConstant : Constant<double>
 	{
-		public NumberConstant(double v) : base(LuaType.Number, v)
+		public NumberConstant(double value) : base(LuaType.Number, value)
 		{ }
 	}
 
 	public class StringConstant : Constant<string>
 	{
-		public StringConstant(string v) : base(LuaType.String, v)
+		public StringConstant(string value) : base(LuaType.String, value)
 		{ }
+
+		public override string ToString()
+		{
+			// substring to avoid printing out NULL character
+			return '\"' + Value.Substring(0, Value.Length - 1) + '\"';
+		}
 	}
 }

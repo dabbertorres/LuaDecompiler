@@ -60,9 +60,7 @@ namespace LuaDecompiler
 			long bytesLeft = fileStream.Length - 1 - fileStream.Position;
 
 			if(bytesLeft == 0)
-			{
 				return null;
-			}
 
 			Lua.Function data = new Lua.Function();
 
@@ -101,16 +99,12 @@ namespace LuaDecompiler
 			header.signature = new string(sig);
 
 			if(header.signature != (char)27 + "Lua")
-			{
 				throw new InvalidDataException("File does not appear to be a Lua bytecode file.");
-			}
 
 			header.version = bytes[4];
 
 			if(header.version != FileHeader.Lua51Version)
-			{
 				throw new NotImplementedException("Only Lua 5.1 is supported.");
-			}
 
 			header.format = bytes[5];
 			header.isLittleEndian = bytes[6] != 0;
@@ -123,9 +117,9 @@ namespace LuaDecompiler
 
 		private List<Lua.Instruction> ReadInstructions()
 		{
-			uint numInstrs = ReadInteger(header.intSize);
+			int numInstrs = ReadInteger(header.intSize);
 
-			List<Lua.Instruction> instrs = new List<Lua.Instruction>((int)numInstrs);
+			List<Lua.Instruction> instrs = new List<Lua.Instruction>(numInstrs);
 
 			for(int i = 0; i < numInstrs; ++i)
 			{
@@ -137,9 +131,9 @@ namespace LuaDecompiler
 
 		private List<Lua.Constant> ReadConstants()
 		{
-			uint numConsts = ReadInteger(header.intSize);
+			int numConsts = ReadInteger(header.intSize);
 
-			List<Lua.Constant> consts = new List<Lua.Constant>((int)numConsts);
+			List<Lua.Constant> consts = new List<Lua.Constant>(numConsts);
 
 			for(int i = 0; i < numConsts; ++i)
 			{
@@ -167,9 +161,9 @@ namespace LuaDecompiler
 
 		private List<Lua.Function> ReadFunctions()
 		{
-			uint numFuncs = ReadInteger(header.intSize);
+			int numFuncs = ReadInteger(header.intSize);
 
-			List<Lua.Function> funcs = new List<Lua.Function>((int)numFuncs);
+			List<Lua.Function> funcs = new List<Lua.Function>(numFuncs);
 
 			for(int i = 0; i < numFuncs; ++i)
 			{
@@ -179,11 +173,11 @@ namespace LuaDecompiler
 			return funcs;
 		}
 
-		private List<uint> ReadLineNumbers()
+		private List<int> ReadLineNumbers()
 		{
-			uint numLinePos = ReadInteger(header.intSize);
+			int numLinePos = ReadInteger(header.intSize);
 
-			List<uint> linePos = new List<uint>((int)numLinePos);
+			List<int> linePos = new List<int>(numLinePos);
 
 			for(int i = 0; i < numLinePos; ++i)
 			{
@@ -196,7 +190,7 @@ namespace LuaDecompiler
 
 		private List<Lua.Local> ReadLocals()
 		{
-			uint numLocals = ReadInteger(header.intSize);
+			int numLocals = ReadInteger(header.intSize);
 
 			List<Lua.Local> locals = new List<Lua.Local>((int)numLocals);
 
@@ -210,7 +204,7 @@ namespace LuaDecompiler
 
 		private List<string> ReadUpvalues()
 		{
-			uint numUpvalues = ReadInteger(header.intSize);
+			int numUpvalues = ReadInteger(header.intSize);
 
 			List<string> upvalues = new List<string>((int)numUpvalues);
 
@@ -224,7 +218,7 @@ namespace LuaDecompiler
 
 		private string ReadString()
 		{
-			uint stringSize = ReadInteger(header.size_tSize);
+			int stringSize = ReadInteger(header.size_tSize);
 
 			byte[] bytes = reader.ReadBytes((int)stringSize);
 
@@ -238,23 +232,23 @@ namespace LuaDecompiler
 			return new string(chars);
 		}
 
-		private uint ReadInteger(byte intSize)
+		private int ReadInteger(byte intSize)
 		{
 			byte[] bytes = reader.ReadBytes(intSize);
-			uint ret = 0;
+			int ret = 0;
 
 			if(header.isLittleEndian)
 			{
 				for(int i = 0; i < intSize; ++i)
 				{
-					ret += (uint)bytes[i] << i * 8;
+					ret += bytes[i] << i * 8;
 				}
 			}
 			else
 			{
 				for(int i = 0; i < intSize; ++i)
 				{
-					ret += (uint)bytes[i] >> i * 8;
+					ret += bytes[i] >> i * 8;
 				}
 			}
 

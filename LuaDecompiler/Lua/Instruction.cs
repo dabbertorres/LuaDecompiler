@@ -46,91 +46,87 @@ namespace LuaDecompiler.Lua
 			VarArg,     // assign vararg function args to registers
 		}
 
-		private const int HalfMax18Bit = 2 << 17;   // == 2^18 / 2 == 131071
+		private const int HalfMax18Bit = 2 << 17;	// == 2^18 / 2 == 131071
 
-		private uint data;
-
-		private Op opcode;
-
-		private uint a;
-		private uint b;
-		private uint c;
-
-		private bool makeBx;
-		private bool signed;
-
-		public uint Data
+		public int Data
 		{
-			get { return data; }
+			get;
+			private set;
 		}
 
 		public Op OpCode
 		{
-			get { return opcode; }
+			get;
+			private set;
 		}
 
-		public uint A
+		public int A
 		{
-			get { return a; }
+			get;
+			private set;
 		}
 
-		public uint B
+		public int B
 		{
-			get { return b; }
+			get;
+			private set;
 		}
 
-		public uint C
+		public int C
 		{
-			get { return c; }
+			get;
+			private set;
 		}
 
-		public uint Bx
+		public int Bx
 		{
-			get { return ((b << 9) & 0xFFE00 | c) & 0x3FFFF; }
+			get { return ((B << 9) & 0xFFE00 | C) & 0x3FFFF; }
 		}
 
 		public int sBx
 		{
-			get { return (int)Bx - HalfMax18Bit; }
+			get { return Bx - HalfMax18Bit; }
 		}
 
 		public bool HasBx
 		{
-			get { return makeBx; }
+			get;
+			private set;
 		}
 
 		public bool Signed
 		{
-			get { return signed; }
+			get;
+			private set;
 		}
 
-		public Instruction(uint dat)
+		public Instruction(int data)
 		{
-			data = dat;
+			Data = data;
 
-			opcode = (Op)(dat & 0x3F);
-			a = (dat >> 6) & 0xFF;
-			b = (dat >> 23) & 0x1FF;
-			c = (dat >> 14) & 0x1FF;
+			OpCode = (Op)(data & 0x3F);
+			A = (data >> 6) & 0xFF;
+			B = (data >> 23) & 0x1FF;
+			C = (data >> 14) & 0x1FF;
 
-			switch(opcode)
+			switch(OpCode)
 			{
 				case Op.Jmp:
 				case Op.ForLoop:
 				case Op.ForPrep:
-					signed = true;
+					Signed = true;
 					goto case Op.LoadK;
 
 				case Op.LoadK:
 				case Op.GetGlobal:
 				case Op.SetGlobal:
 				case Op.Closure:
-					makeBx = true;
+					HasBx = true;
 					break;
 
 				default:
-					makeBx = false;
-					signed = false;
+					HasBx = false;
+					Signed = false;
 					break;
 			}
 		}

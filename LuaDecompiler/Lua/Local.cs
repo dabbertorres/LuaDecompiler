@@ -4,30 +4,29 @@ namespace LuaDecompiler.Lua
 {
 	public class Local
 	{
-		private string name;
-		private uint scopeStart;
-		private uint scopeEnd;
-
 		public string Name
 		{
-			get { return name; }
+			get;
+			private set;
 		}
 
-		public uint ScopeStart
+		public int ScopeStart
 		{
-			get { return scopeStart; }
+			get;
+			private set;
 		}
 
-		public uint ScopeEnd
+		public int ScopeEnd
 		{
-			get { return scopeEnd; }
+			get;
+			private set;
 		}
 
-		public Local(string vn, uint ss, uint se)
+		public Local(string name, int scopeStart, int scopeEnd)
 		{
-			name = vn;
-			scopeStart = ss;
-			scopeEnd = se;
+			Name = name;
+			ScopeStart = scopeStart;
+			ScopeEnd = scopeEnd;
 		}
 	}
 }
