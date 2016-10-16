@@ -25,6 +25,23 @@ namespace LuaDecompiler
 
 		// default header bytes on x86:
 		// 1B4C7561 51000104 04040800
+
+		public override string ToString()
+		{
+			StringBuilder sb = new StringBuilder();
+
+			sb.AppendFormat("signature:       {0}\n", signature);
+			sb.AppendFormat("version:         {0}\n", version);
+			sb.AppendFormat("format:          {0}\n", format);
+			sb.AppendFormat("isLittleEndian:  {0}\n", isLittleEndian);
+			sb.AppendFormat("intSize:         {0}\n", intSize);
+			sb.AppendFormat("size_tSize:      {0}\n", size_tSize);
+			sb.AppendFormat("instructionSize: {0}\n", instructionSize);
+			sb.AppendFormat("lua_NumberSize:  {0}\n", lua_NumberSize);
+			sb.AppendFormat("isIntegral:      {0}\n", isIntegral);
+
+			return sb.ToString();
+		}
 	}
 
 	public class FileReader : IDisposable
